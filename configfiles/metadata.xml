@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Entities>
+    <ExtensionPackages>
+        <ExtensionPackage dependsOn="" description="Extension for creating PDF reports that contain a specific mashup, displayed like in the browser." minimumThingWorxVersion="7.4.0" name="PDFExtension" packageVersion="3.0.2" vendor="Thingworx Labs">
+            <JarResources>
+                <FileResource description="" file="pdfextension.jar" type="JAR"/>
+                <FileResource description="" file="jbrowserdriver-0.17.3.jar" type="JAR"/>
+                <FileResource description="" file="jna-3.0.9.jar" type="JAR"/>
+                <FileResource description="" file="slf4j-simple-1.7.2.jar" type="JAR"/>
+                <FileResource description="" file="zt-exec-1.8.jar" type="JAR"/>
+                <FileResource description="" file="zt-process-1.3.jar" type="JAR"/>
+                <FileResource description="" file="iText-2.1.7.jar" type="JAR"/>
+                <FileResource description="" file="fast-classpath-scanner-1.9.17.jar" type="JAR"/>
+                <FileResource description="" file="selenium-remote-driver-2.52.0.jar" type="JAR"/>
+                <FileResource description="" file="selenium-server-2.52.0.jar" type="JAR"/>
+                <FileResource description="" file="selenium-api-2.52.0.jar" type="JAR"/>
+            </JarResources>
+        </ExtensionPackage>
+    </ExtensionPackages>
+    <Resources>
+        <Resource aspect.isCreatable="false" aspect.isEditableExtensionObject="false" className="PDFExport" description="" name="PDFExport"/>
+    </Resources>
+</Entities>

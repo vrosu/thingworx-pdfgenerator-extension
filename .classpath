@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-cache-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/jna-3.0.9.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/zt-exec-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/zt-process-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/iText-2.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/fast-classpath-scanner-1.9.17.jar"/>
+	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-remote-driver-2.52.0.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-server-2.52.0.jar"/>
+	<classpathentry kind="lib" path="lib/selenium-api-2.52.0.jar"/>
+	<classpathentry kind="lib" path="lib/jbrowserdriver-0.17.3.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="twx-lib/jackson-core-2.8.1.jar"/>
+	<classpathentry kind="lib" path="twx-lib/custom-rhino-js-5.1.0.jar"/>
+	<classpathentry kind="lib" path="twx-lib/logback-core-1.0.13.jar"/>
+	<classpathentry kind="lib" path="twx-lib/jackson-databind-2.8.1.jar"/>
+	<classpathentry kind="lib" path="twx-lib/thingworx-communications-client-7.4.0-b159.jar"/>
+	<classpathentry kind="lib" path="twx-lib/jackson-dataformat-smile-2.8.1.jar"/>
+	<classpathentry kind="lib" path="twx-lib/thingworx-communications-server-7.4.0-b159.jar"/>
+	<classpathentry kind="lib" path="twx-lib/jackson-annotations-2.8.0.jar"/>
+	<classpathentry kind="lib" path="twx-lib/joda-time-2.9.jar"/>
+	<classpathentry kind="lib" path="twx-lib/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="twx-lib/thingworx-ext-sdk-7.4.0-b159.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/PDFExtension/twx-lib/thingworx-javadocs-7.4.0-b159.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="twx-lib/thingworx-javadocs-7.4.0-b159.jar"/>
+	<classpathentry kind="lib" path="twx-lib/logback-classic-1.0.13.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

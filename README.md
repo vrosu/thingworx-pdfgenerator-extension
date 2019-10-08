@@ -9,4 +9,4 @@ After that place the corresponding ThingWorx SDK files in the twx-lib folder in 
 Please open issues and feel free to fork it.
 
 This is a ThingWorx Labs project, not covered by PTC Technical Support.
-ThingWorx Labs is a concept that contains all the internal PTC created content that can be usefull for the community.
+ThingWorx Labs contains all the internal PTC created content that can be useful for the ThingWorx developer community.

@@ -56,42 +56,63 @@ public class PDFExport extends Resource {
 	@ThingworxServiceDefinition(name = "CreatePDF", description = "")
 	@ThingworxServiceResult(name = "Result", description = "Contains error message in case of error.", baseType = "STRING")
 	public String CreatePDF(
-			@ThingworxServiceParameter(name = "Rotated90Deg", description = "Do we apply a 90 degrees rotation or not. Useful for printing on Portrait or Landscape", baseType = "BOOLEAN", aspects = {
-					"defaultValue:false" }) Boolean bool_Rotation,
-			@ThingworxServiceParameter(name = "Resolution", description = "Resolution must be in the format x*y, eg. 1366*768", baseType = "STRING", aspects = {
-					"defaultValue:1366*768" }) String str_Resolution,
-			@ThingworxServiceParameter(name = "AppKey", description = "AppKey", baseType = "STRING") String TWAppKey,
-			@ThingworxServiceParameter(name = "OutputFileName", description = "", baseType = "STRING",aspects = {
-			"defaultValue:Report.pdf" }) String str_OutputFileName,
-			@ThingworxServiceParameter(name = "ServerAddress", description = "The address must be ending in /Runtime/index.html#mashup=mashup_name. It will not work with Thingworx/Mashups/mashup_name", baseType = "STRING", aspects = {
-					"defaultValue:https://localhost:8443/Thingworx/Runtime/index.html#mashup=LogViewer" }) String server,
-			@ThingworxServiceParameter(name = "FileRepository", description = "Choose a file repository where the output file will be stored.", baseType = "THINGNAME", aspects = {
-					"defaultValue:SystemRepository", "thingTemplate:FileRepository" }) String FileRepository,
-			@ThingworxServiceParameter(name = "DebugUsefontconfig", description = "Enable use of fontconfig when exporting the PDF. Used in case of Redhat OS.", baseType = "BOOLEAN", aspects = {
-			"defaultValue:true" }) Boolean bool_Usefontconfig
+			@ThingworxServiceParameter(name = "Rotated90Deg", description = "Do we apply a 90 degrees rotation or not. Useful for printing on Portrait or Landscape", baseType = "BOOLEAN", aspects = {	"defaultValue:false" }) 
+			Boolean bool_Rotation,
+			
+			@ThingworxServiceParameter(name = "Resolution", description = "Resolution must be in the format x*y, eg. 1366*768", baseType = "STRING", aspects = {"defaultValue:1366*768" }) 
+			String str_Resolution,
+			
+			@ThingworxServiceParameter(name = "AppKey", description = "AppKey", baseType = "STRING") 
+			String TWAppKey,
+			
+			@ThingworxServiceParameter(name = "OutputFileName", description = "", baseType = "STRING",aspects = {"defaultValue:Report.pdf" }) 
+			String str_OutputFileName,
+			
+			@ThingworxServiceParameter(name = "ServerAddress", description = "The address must be ending in /Runtime/index.html#mashup=mashup_name. It will not work with Thingworx/Mashups/mashup_name", baseType = "STRING", aspects = {"defaultValue:https://localhost:8443/Thingworx/Runtime/index.html#mashup=LogViewer" }) 
+			String server,
+			
+			@ThingworxServiceParameter(name = "FileRepository", description = "Choose a file repository where the output file will be stored.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository" }) 
+			String FileRepository,
+			
+			@ThingworxServiceParameter(name = "DebugUsefontconfig", description = "Enable use of fontconfig when exporting the PDF. Used in case of Redhat OS.", baseType = "BOOLEAN", aspects = {"defaultValue:true" }) 
+			Boolean bool_Usefontconfig,
+			
+			@ThingworxServiceParameter(name = "ScreenshotDelaySecond", description = "Add a delay before taking the screenshot in Second", baseType = "INTEGER", aspects = {"defaultValue:0" }) 
+			Integer screenshotDelaySecond
+
 
 	) throws Exception {
-		String str_Result = "";
-
+		String result = "";
+		String[] resolutions = null;
+		int screenshotDelayMS = 0;
+		int ajaxResourceTimeout = 2000;
+		
 		if (bool_Rotation == null)
 			bool_Rotation = false;
 		
-		String[] str_Resolutions = str_Resolution.split("\\*");
+		if(screenshotDelaySecond == null ||  (screenshotDelaySecond != null && screenshotDelaySecond < 0)) {
+			screenshotDelaySecond = 0;
+		}		
+		
+		screenshotDelayMS = screenshotDelaySecond * 1000;
+		ajaxResourceTimeout = screenshotDelayMS > ajaxResourceTimeout ? screenshotDelayMS : ajaxResourceTimeout;
+
+		resolutions = str_Resolution.split("\\*");
+		
 		LinkedHashMap<String, String> map = new LinkedHashMap<>(1);
-		//String encoding = new String(Base64.encodeBase64((TWUser + ":" + TWUPass).getBytes()));
-		//map.put("Authorization", "Basic " + encoding);
+
 		map.put("appKey", TWAppKey);
-		Dimension dim = new Dimension(Integer.parseInt(str_Resolutions[0]), Integer.parseInt(str_Resolutions[1]));
+		Dimension dim = new Dimension(Integer.parseInt(resolutions[0]), Integer.parseInt(resolutions[1]));
 		Settings sett;
 		if (bool_Usefontconfig==true)
 		{
 		 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
-				.quickRender(false).ajaxWait(10000).hostnameVerification(false).ssl("trustanything").build();
+				.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").build();
 		}
 		else
 		{
 			 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
-						.quickRender(false).ajaxWait(10000).hostnameVerification(false).ssl("trustanything").javaOptions("-Dprism.useFontConfig=false").build();
+						.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").javaOptions("-Dprism.useFontConfig=false").build();
 		}
 		
 		
@@ -101,21 +122,27 @@ public class PDFExport extends Resource {
 		// This will block for the page load and any
 		// associated AJAX requests
 
-		driver.get(server);
+		driver.get(server);		
+		
 		String str_PageSource = driver.getPageSource();
 		if (str_PageSource.indexOf("<html><head></head><body></body></html>") != -1) 
 		{
-			str_Result = "Error: invalid page URL input. The ServerAddress is: " + server;
+			result = "Error: invalid page URL input. The ServerAddress is: " + server;
 		} 
 		else if (str_PageSource.indexOf("HTTP Status 401 - Authentication failed") != -1)
 		{
-			str_Result = "HTTP Status 401 - Authentication failed";
+			result = "HTTP Status 401 - Authentication failed";
 		}
 		else
 		{
 			// You can get status code unlike other Selenium drivers.
 			// It blocks for AJAX requests and page loads after clicks
 			// and keyboard events.
+
+			if(screenshotDelayMS > 0) {
+				Thread.sleep(screenshotDelayMS);				
+			}
+			
 			File fil = driver.getScreenshotAs(OutputType.FILE);
 
 			FileRepositoryThing filerepo = (FileRepositoryThing) ThingUtilities.findThing(FileRepository);
@@ -143,11 +170,11 @@ public class PDFExport extends Resource {
 			
 			document.add(img);
 			document.close();
-			str_Result="Success.";
+			result="Success.";
 		}
 		driver.quit();
 		
-		return str_Result;
+		return result;
 
 	}
 	

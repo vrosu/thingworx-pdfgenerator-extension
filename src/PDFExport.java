@@ -22,6 +22,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.RequestHeaders;
 import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
 import com.thingworx.entities.utils.ThingUtilities;
 import com.thingworx.logging.LogUtilities;
 import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
@@ -78,7 +79,10 @@ public class PDFExport extends Resource {
 			Boolean bool_Usefontconfig,
 			
 			@ThingworxServiceParameter(name = "ScreenshotDelaySecond", description = "Add a delay before taking the screenshot in Second", baseType = "INTEGER", aspects = {"defaultValue:0" }) 
-			Integer screenshotDelaySecond
+			Integer screenshotDelaySecond,
+			
+			@ThingworxServiceParameter(name = "TimeZoneName", description = "Set a time zone to the broswer emulator", baseType = "STRING") 
+			String timeZoneName
 
 
 	) throws Exception {
@@ -86,13 +90,20 @@ public class PDFExport extends Resource {
 		String[] resolutions = null;
 		int screenshotDelayMS = 0;
 		int ajaxResourceTimeout = 2000;
+		Timezone timezone = null;
 		
 		if (bool_Rotation == null)
 			bool_Rotation = false;
 		
 		if(screenshotDelaySecond == null ||  (screenshotDelaySecond != null && screenshotDelaySecond < 0)) {
 			screenshotDelaySecond = 0;
-		}		
+		}
+		
+		if(timeZoneName != null && !timeZoneName.trim().isEmpty()) {
+			timezone = Timezone.byName(timeZoneName); 
+		}
+		
+		timezone = timezone != null ? timezone : Timezone.UTC;
 		
 		screenshotDelayMS = screenshotDelaySecond * 1000;
 		ajaxResourceTimeout = screenshotDelayMS > ajaxResourceTimeout ? screenshotDelayMS : ajaxResourceTimeout;
@@ -106,15 +117,15 @@ public class PDFExport extends Resource {
 		Settings sett;
 		if (bool_Usefontconfig==true)
 		{
-		 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
+		 sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
 				.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").build();
 		}
 		else
 		{
-			 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
+			 sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
 						.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").javaOptions("-Dprism.useFontConfig=false").build();
 		}
-		
+
 		
 		JBrowserDriver driver = new JBrowserDriver(sett);		
 

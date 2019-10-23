@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Entities>
     <ExtensionPackages>
-        <ExtensionPackage dependsOn="" description="Extension for creating PDF reports that contain a specific mashup, displayed like in the browser." minimumThingWorxVersion="7.4.0" name="PDFExtension" packageVersion="3.0.3" vendor="Thingworx Labs">
+        <ExtensionPackage dependsOn="" description="Extension for creating PDF reports that contain a specific mashup, displayed like in the browser." minimumThingWorxVersion="7.4.0" name="PDFExtension" packageVersion="3.0.4" vendor="Thingworx Labs">
             <JarResources>
                 <FileResource description="" file="pdfextension.jar" type="JAR"/>
                 <FileResource description="" file="jbrowserdriver-0.17.3.jar" type="JAR"/>

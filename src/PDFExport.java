@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.openqa.selenium.Dimension;
@@ -23,6 +24,7 @@ import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.RequestHeaders;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
+import com.thingworx.data.util.InfoTableInstanceFactory;
 import com.thingworx.entities.utils.ThingUtilities;
 import com.thingworx.logging.LogUtilities;
 import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
@@ -32,6 +34,7 @@ import com.thingworx.resources.Resource;
 import com.thingworx.things.repository.FileRepositoryThing;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
+import com.thingworx.types.primitives.StringPrimitive;
 
 /**
  * 
@@ -40,6 +43,7 @@ import com.thingworx.types.collections.ValueCollection;
 /**
  * @author vrosu Jan 28, 2016 2016
  */
+
 public class PDFExport extends Resource {
 
 	private static Logger _logger = LogUtilities.getInstance().getApplicationLogger(PDFExport.class);
@@ -254,5 +258,34 @@ public class PDFExport extends Resource {
 		}
 		
 		return str_Result;	
+	}
+
+	@ThingworxServiceDefinition(name = "GetAvailableTimezones", description = "This service will retrieve the available timezone that can be used in the CreatePDF service", category = "PDFExport", isAllowOverride = false, aspects = { "isAsync:false" })
+	@ThingworxServiceResult(name = "result", description = "List of available timezone that can be passed to the CreatePDF Service", baseType = "INFOTABLE", aspects = {"isEntityDataShape:true", "dataShape:PDFExport_GetAvailableTimezones" })
+	
+	public InfoTable GetAvailableTimezones() {
+		_logger.trace("Entering Service: GetAvailableTimezones");
+		_logger.trace("Exiting Service: GetAvailableTimezones");
+		InfoTable result = null; 
+		Set<Timezone> timezones;
+		try {
+			result = InfoTableInstanceFactory.createInfoTableFromDataShape("PDFExport_GetAvailableTimezones");
+			timezones = Timezone.ALL_ZONES;
+			
+			// Loop through each timezone and add it into the value collection
+			for(Timezone timezone : timezones) {
+				ValueCollection valueCollection = new ValueCollection();
+				valueCollection.put("TimezoneName", new StringPrimitive(timezone.name()));
+				result.addRow(valueCollection);
+			}
+			
+			result.quickSort("TimezoneName");
+			
+		}catch(Exception e) {
+			result = null;
+			_logger.error(e.getMessage());
+		}
+		
+		return result;
 	}
 }

@@ -51,6 +51,8 @@ public class PDFExport extends Resource {
 	 * 
 	 */
 	private static final long serialVersionUID = -1395344025018016841L;
+	private static final String  COLUMN_TIME_ZONE_NAME = "TimezoneName";
+	private static final String  DATA_SHAPE_AVAILABLE_TIME_ZONE = "PDFExport_GetAvailableTimezones";
 
 	/**
 	 * 
@@ -62,25 +64,25 @@ public class PDFExport extends Resource {
 	@ThingworxServiceResult(name = "Result", description = "Contains error message in case of error.", baseType = "STRING")
 	public String CreatePDF(
 			@ThingworxServiceParameter(name = "Rotated90Deg", description = "Do we apply a 90 degrees rotation or not. Useful for printing on Portrait or Landscape", baseType = "BOOLEAN", aspects = {	"defaultValue:false" }) 
-			Boolean bool_Rotation,
+			Boolean rotate90Deg,
 			
 			@ThingworxServiceParameter(name = "Resolution", description = "Resolution must be in the format x*y, eg. 1366*768", baseType = "STRING", aspects = {"defaultValue:1366*768" }) 
-			String str_Resolution,
+			String resolution,
 			
 			@ThingworxServiceParameter(name = "AppKey", description = "AppKey", baseType = "STRING") 
-			String TWAppKey,
+			String twAppKey,
 			
 			@ThingworxServiceParameter(name = "OutputFileName", description = "", baseType = "STRING",aspects = {"defaultValue:Report.pdf" }) 
-			String str_OutputFileName,
+			String fileName,
 			
 			@ThingworxServiceParameter(name = "ServerAddress", description = "The address must be ending in /Runtime/index.html#mashup=mashup_name. It will not work with Thingworx/Mashups/mashup_name", baseType = "STRING", aspects = {"defaultValue:https://localhost:8443/Thingworx/Runtime/index.html#mashup=LogViewer" }) 
 			String server,
 			
 			@ThingworxServiceParameter(name = "FileRepository", description = "Choose a file repository where the output file will be stored.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository" }) 
-			String FileRepository,
+			String fileRepository,
 			
 			@ThingworxServiceParameter(name = "DebugUsefontconfig", description = "Enable use of fontconfig when exporting the PDF. Used in case of Redhat OS.", baseType = "BOOLEAN", aspects = {"defaultValue:true" }) 
-			Boolean bool_Usefontconfig,
+			Boolean usefontconfig,
 			
 			@ThingworxServiceParameter(name = "ScreenshotDelaySecond", description = "Add a delay before taking the screenshot in Second", baseType = "INTEGER", aspects = {"defaultValue:0" }) 
 			Integer screenshotDelaySecond,
@@ -90,14 +92,16 @@ public class PDFExport extends Resource {
 
 
 	) throws Exception {
+		// Variable Declaration
 		String result = "";
 		String[] resolutions = null;
 		int screenshotDelayMS = 0;
 		int ajaxResourceTimeout = 2000;
 		Timezone timezone = null;
 		
-		if (bool_Rotation == null)
-			bool_Rotation = false;
+		// Validate our parameters are good
+		if (rotate90Deg == null)
+			rotate90Deg = false;
 		
 		if(screenshotDelaySecond == null ||  (screenshotDelaySecond != null && screenshotDelaySecond < 0)) {
 			screenshotDelaySecond = 0;
@@ -110,18 +114,23 @@ public class PDFExport extends Resource {
 		timezone = timezone != null ? timezone : Timezone.UTC;
 		
 		screenshotDelayMS = screenshotDelaySecond * 1000;
+		
+		
 		ajaxResourceTimeout = screenshotDelayMS > ajaxResourceTimeout ? screenshotDelayMS : ajaxResourceTimeout;
 
-		resolutions = str_Resolution.split("\\*");
+		resolutions = resolution.split("\\*");
 		
 		LinkedHashMap<String, String> map = new LinkedHashMap<>(1);
 
-		map.put("appKey", TWAppKey);
+		map.put("appKey", twAppKey);
+		
 		Dimension dim = new Dimension(Integer.parseInt(resolutions[0]), Integer.parseInt(resolutions[1]));
+		
 		Settings sett;
-		if (bool_Usefontconfig==true)
+		
+		if (usefontconfig)
 		{
-		 sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
+			sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
 				.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").build();
 		}
 		else
@@ -160,16 +169,16 @@ public class PDFExport extends Resource {
 			
 			File fil = driver.getScreenshotAs(OutputType.FILE);
 
-			FileRepositoryThing filerepo = (FileRepositoryThing) ThingUtilities.findThing(FileRepository);
+			FileRepositoryThing filerepo = (FileRepositoryThing) ThingUtilities.findThing(fileRepository);
 			
 			filerepo.processServiceRequest("GetDirectoryStructure", null);
 
 			Document document = new Document(PageSize.A4, 10, 10, 10, 10);
-			PdfWriter.getInstance(document, new FileOutputStream(filerepo.getRootPath() + File.separator + str_OutputFileName));
+			PdfWriter.getInstance(document, new FileOutputStream(filerepo.getRootPath() + File.separator + fileName));
 			document.open();
 			Image img = Image.getInstance(fil.getAbsolutePath());
 			float scaler;
-			if (bool_Rotation == true) 
+			if (rotate90Deg == true) 
 			{
 				img.setRotationDegrees(90);
 				scaler = (float) (((document.getPageSize().getHeight() - document.leftMargin() - document.rightMargin()
@@ -196,9 +205,12 @@ public class PDFExport extends Resource {
 	@ThingworxServiceDefinition(name = "MergePDFs", description = "Takes an InfoTable of PDF filenames in the given FileRepository and merges them into a single PDF.")
 	@ThingworxServiceResult(name = "Result", description = "Contains error message in case of error.", baseType = "STRING")
 	public String MergePDFs(
-			@ThingworxServiceParameter(name = "Filenames", description = "List of PDF filenames to merge together.", baseType = "INFOTABLE", aspects = {"dataShape:GenericStringList"}) InfoTable filenames, 
-			@ThingworxServiceParameter(name = "OutputFileName", description = "Name of the merged PDF.", baseType = "STRING") String OutputFileName, 
-			@ThingworxServiceParameter(name = "FileRepository", description = "The name of the file repository to use.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository"}) String FileRepository
+			@ThingworxServiceParameter(name = "Filenames", description = "List of PDF filenames to merge together.", baseType = "INFOTABLE", aspects = {"dataShape:GenericStringList"}) 
+			InfoTable filenames, 
+			@ThingworxServiceParameter(name = "OutputFileName", description = "Name of the merged PDF.", baseType = "STRING") 
+			String OutputFileName, 
+			@ThingworxServiceParameter(name = "FileRepository", description = "The name of the file repository to use.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository"}) 
+			String FileRepository
 	)
 	{
 		String str_Result = "Success";
@@ -262,24 +274,23 @@ public class PDFExport extends Resource {
 
 	@ThingworxServiceDefinition(name = "GetAvailableTimezones", description = "This service will retrieve the available timezone that can be used in the CreatePDF service", category = "PDFExport", isAllowOverride = false, aspects = { "isAsync:false" })
 	@ThingworxServiceResult(name = "result", description = "List of available timezone that can be passed to the CreatePDF Service", baseType = "INFOTABLE", aspects = {"isEntityDataShape:true", "dataShape:PDFExport_GetAvailableTimezones" })
-	
 	public InfoTable GetAvailableTimezones() {
-		_logger.trace("Entering Service: GetAvailableTimezones");
-		_logger.trace("Exiting Service: GetAvailableTimezones");
+		// Variable Declaration
 		InfoTable result = null; 
 		Set<Timezone> timezones;
+		
 		try {
-			result = InfoTableInstanceFactory.createInfoTableFromDataShape("PDFExport_GetAvailableTimezones");
+			result = InfoTableInstanceFactory.createInfoTableFromDataShape(DATA_SHAPE_AVAILABLE_TIME_ZONE);
 			timezones = Timezone.ALL_ZONES;
 			
-			// Loop through each timezone and add it into the value collection
+			// Loop through all time zone and add it into the value collection
 			for(Timezone timezone : timezones) {
 				ValueCollection valueCollection = new ValueCollection();
-				valueCollection.put("TimezoneName", new StringPrimitive(timezone.name()));
+				valueCollection.put(COLUMN_TIME_ZONE_NAME, new StringPrimitive(timezone.name()));
 				result.addRow(valueCollection);
 			}
 			
-			result.quickSort("TimezoneName");
+			result.quickSort(COLUMN_TIME_ZONE_NAME);
 			
 		}catch(Exception e) {
 			result = null;

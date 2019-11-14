@@ -87,7 +87,7 @@ public class PDFExport extends Resource {
 			@ThingworxServiceParameter(name = "ScreenshotDelaySecond", description = "Add a delay before taking the screenshot in Second", baseType = "INTEGER", aspects = {"defaultValue:0" }) 
 			Integer screenshotDelaySecond,
 			
-			@ThingworxServiceParameter(name = "TimeZoneName", description = "Set a time zone to the broswer emulator", baseType = "STRING") 
+			@ThingworxServiceParameter(name = "TimeZoneName", description = "Set a time zone to the broswer emulator. Please take a look at the GetAvailableTimezones service, to find available Timezones.", baseType = "STRING") 
 			String timeZoneName
 
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.openqa.selenium.Dimension;
@@ -22,6 +23,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.RequestHeaders;
 import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
+import com.thingworx.data.util.InfoTableInstanceFactory;
 import com.thingworx.entities.utils.ThingUtilities;
 import com.thingworx.logging.LogUtilities;
 import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
@@ -31,6 +34,7 @@ import com.thingworx.resources.Resource;
 import com.thingworx.things.repository.FileRepositoryThing;
 import com.thingworx.types.InfoTable;
 import com.thingworx.types.collections.ValueCollection;
+import com.thingworx.types.primitives.StringPrimitive;
 
 /**
  * 
@@ -39,6 +43,7 @@ import com.thingworx.types.collections.ValueCollection;
 /**
  * @author vrosu Jan 28, 2016 2016
  */
+
 public class PDFExport extends Resource {
 
 	private static Logger _logger = LogUtilities.getInstance().getApplicationLogger(PDFExport.class);
@@ -46,6 +51,8 @@ public class PDFExport extends Resource {
 	 * 
 	 */
 	private static final long serialVersionUID = -1395344025018016841L;
+	private static final String  COLUMN_TIME_ZONE_NAME = "TimezoneName";
+	private static final String  DATA_SHAPE_AVAILABLE_TIME_ZONE = "PDFExport_GetAvailableTimezones";
 
 	/**
 	 * 
@@ -56,44 +63,82 @@ public class PDFExport extends Resource {
 	@ThingworxServiceDefinition(name = "CreatePDF", description = "")
 	@ThingworxServiceResult(name = "Result", description = "Contains error message in case of error.", baseType = "STRING")
 	public String CreatePDF(
-			@ThingworxServiceParameter(name = "Rotated90Deg", description = "Do we apply a 90 degrees rotation or not. Useful for printing on Portrait or Landscape", baseType = "BOOLEAN", aspects = {
-					"defaultValue:false" }) Boolean bool_Rotation,
-			@ThingworxServiceParameter(name = "Resolution", description = "Resolution must be in the format x*y, eg. 1366*768", baseType = "STRING", aspects = {
-					"defaultValue:1366*768" }) String str_Resolution,
-			@ThingworxServiceParameter(name = "AppKey", description = "AppKey", baseType = "STRING") String TWAppKey,
-			@ThingworxServiceParameter(name = "OutputFileName", description = "", baseType = "STRING",aspects = {
-			"defaultValue:Report.pdf" }) String str_OutputFileName,
-			@ThingworxServiceParameter(name = "ServerAddress", description = "The address must be ending in /Runtime/index.html#mashup=mashup_name. It will not work with Thingworx/Mashups/mashup_name", baseType = "STRING", aspects = {
-					"defaultValue:https://localhost:8443/Thingworx/Runtime/index.html#mashup=LogViewer" }) String server,
-			@ThingworxServiceParameter(name = "FileRepository", description = "Choose a file repository where the output file will be stored.", baseType = "THINGNAME", aspects = {
-					"defaultValue:SystemRepository", "thingTemplate:FileRepository" }) String FileRepository,
-			@ThingworxServiceParameter(name = "DebugUsefontconfig", description = "Enable use of fontconfig when exporting the PDF. Used in case of Redhat OS.", baseType = "BOOLEAN", aspects = {
-			"defaultValue:true" }) Boolean bool_Usefontconfig
+			@ThingworxServiceParameter(name = "Rotated90Deg", description = "Do we apply a 90 degrees rotation or not. Useful for printing on Portrait or Landscape", baseType = "BOOLEAN", aspects = {	"defaultValue:false" }) 
+			Boolean rotate90Deg,
+			
+			@ThingworxServiceParameter(name = "Resolution", description = "Resolution must be in the format x*y, eg. 1366*768", baseType = "STRING", aspects = {"defaultValue:1366*768" }) 
+			String resolution,
+			
+			@ThingworxServiceParameter(name = "AppKey", description = "AppKey", baseType = "STRING") 
+			String twAppKey,
+			
+			@ThingworxServiceParameter(name = "OutputFileName", description = "", baseType = "STRING",aspects = {"defaultValue:Report.pdf" }) 
+			String fileName,
+			
+			@ThingworxServiceParameter(name = "ServerAddress", description = "The address must be ending in /Runtime/index.html#mashup=mashup_name. It will not work with Thingworx/Mashups/mashup_name", baseType = "STRING", aspects = {"defaultValue:https://localhost:8443/Thingworx/Runtime/index.html#mashup=LogViewer" }) 
+			String server,
+			
+			@ThingworxServiceParameter(name = "FileRepository", description = "Choose a file repository where the output file will be stored.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository" }) 
+			String fileRepository,
+			
+			@ThingworxServiceParameter(name = "DebugUsefontconfig", description = "Enable use of fontconfig when exporting the PDF. Used in case of Redhat OS.", baseType = "BOOLEAN", aspects = {"defaultValue:true" }) 
+			Boolean usefontconfig,
+			
+			@ThingworxServiceParameter(name = "ScreenshotDelaySecond", description = "Add a delay before taking the screenshot in Second", baseType = "INTEGER", aspects = {"defaultValue:0" }) 
+			Integer screenshotDelaySecond,
+			
+			@ThingworxServiceParameter(name = "TimeZoneName", description = "Set a time zone to the broswer emulator. Please take a look at the GetAvailableTimezones service, to find available Timezones.", baseType = "STRING") 
+			String timeZoneName
+
 
 	) throws Exception {
-		String str_Result = "";
-
-		if (bool_Rotation == null)
-			bool_Rotation = false;
+		// Variable Declaration
+		String result = "";
+		String[] resolutions = null;
+		int screenshotDelayMS = 0;
+		int ajaxResourceTimeout = 2000;
+		Timezone timezone = null;
 		
-		String[] str_Resolutions = str_Resolution.split("\\*");
+		// Validate our parameters are good
+		if (rotate90Deg == null)
+			rotate90Deg = false;
+		
+		if(screenshotDelaySecond == null ||  (screenshotDelaySecond != null && screenshotDelaySecond < 0)) {
+			screenshotDelaySecond = 0;
+		}
+		
+		if(timeZoneName != null && !timeZoneName.trim().isEmpty()) {
+			timezone = Timezone.byName(timeZoneName); 
+		}
+		
+		timezone = timezone != null ? timezone : Timezone.UTC;
+		
+		screenshotDelayMS = screenshotDelaySecond * 1000;
+		
+		
+		ajaxResourceTimeout = screenshotDelayMS > ajaxResourceTimeout ? screenshotDelayMS : ajaxResourceTimeout;
+
+		resolutions = resolution.split("\\*");
+		
 		LinkedHashMap<String, String> map = new LinkedHashMap<>(1);
-		//String encoding = new String(Base64.encodeBase64((TWUser + ":" + TWUPass).getBytes()));
-		//map.put("Authorization", "Basic " + encoding);
-		map.put("appKey", TWAppKey);
-		Dimension dim = new Dimension(Integer.parseInt(str_Resolutions[0]), Integer.parseInt(str_Resolutions[1]));
+
+		map.put("appKey", twAppKey);
+		
+		Dimension dim = new Dimension(Integer.parseInt(resolutions[0]), Integer.parseInt(resolutions[1]));
+		
 		Settings sett;
-		if (bool_Usefontconfig==true)
+		
+		if (usefontconfig)
 		{
-		 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
-				.quickRender(false).ajaxWait(10000).hostnameVerification(false).ssl("trustanything").build();
+			sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
+				.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").build();
 		}
 		else
 		{
-			 sett = Settings.builder().requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
-						.quickRender(false).ajaxWait(10000).hostnameVerification(false).ssl("trustanything").javaOptions("-Dprism.useFontConfig=false").build();
+			 sett = Settings.builder().timezone(timezone).requestHeaders(new RequestHeaders(map)).screen(dim).blockAds(false)
+						.quickRender(false).ajaxWait(10000).ajaxResourceTimeout(ajaxResourceTimeout).hostnameVerification(false).ssl("trustanything").javaOptions("-Dprism.useFontConfig=false").build();
 		}
-		
+
 		
 		JBrowserDriver driver = new JBrowserDriver(sett);		
 
@@ -101,33 +146,39 @@ public class PDFExport extends Resource {
 		// This will block for the page load and any
 		// associated AJAX requests
 
-		driver.get(server);
+		driver.get(server);		
+		
 		String str_PageSource = driver.getPageSource();
 		if (str_PageSource.indexOf("<html><head></head><body></body></html>") != -1) 
 		{
-			str_Result = "Error: invalid page URL input. The ServerAddress is: " + server;
+			result = "Error: invalid page URL input. The ServerAddress is: " + server;
 		} 
 		else if (str_PageSource.indexOf("HTTP Status 401 - Authentication failed") != -1)
 		{
-			str_Result = "HTTP Status 401 - Authentication failed";
+			result = "HTTP Status 401 - Authentication failed";
 		}
 		else
 		{
 			// You can get status code unlike other Selenium drivers.
 			// It blocks for AJAX requests and page loads after clicks
 			// and keyboard events.
+
+			if(screenshotDelayMS > 0) {
+				Thread.sleep(screenshotDelayMS);				
+			}
+			
 			File fil = driver.getScreenshotAs(OutputType.FILE);
 
-			FileRepositoryThing filerepo = (FileRepositoryThing) ThingUtilities.findThing(FileRepository);
+			FileRepositoryThing filerepo = (FileRepositoryThing) ThingUtilities.findThing(fileRepository);
 			
 			filerepo.processServiceRequest("GetDirectoryStructure", null);
 
 			Document document = new Document(PageSize.A4, 10, 10, 10, 10);
-			PdfWriter.getInstance(document, new FileOutputStream(filerepo.getRootPath() + File.separator + str_OutputFileName));
+			PdfWriter.getInstance(document, new FileOutputStream(filerepo.getRootPath() + File.separator + fileName));
 			document.open();
 			Image img = Image.getInstance(fil.getAbsolutePath());
 			float scaler;
-			if (bool_Rotation == true) 
+			if (rotate90Deg == true) 
 			{
 				img.setRotationDegrees(90);
 				scaler = (float) (((document.getPageSize().getHeight() - document.leftMargin() - document.rightMargin()
@@ -143,20 +194,23 @@ public class PDFExport extends Resource {
 			
 			document.add(img);
 			document.close();
-			str_Result="Success.";
+			result="Success.";
 		}
 		driver.quit();
 		
-		return str_Result;
+		return result;
 
 	}
 	
 	@ThingworxServiceDefinition(name = "MergePDFs", description = "Takes an InfoTable of PDF filenames in the given FileRepository and merges them into a single PDF.")
 	@ThingworxServiceResult(name = "Result", description = "Contains error message in case of error.", baseType = "STRING")
 	public String MergePDFs(
-			@ThingworxServiceParameter(name = "Filenames", description = "List of PDF filenames to merge together.", baseType = "INFOTABLE", aspects = {"dataShape:GenericStringList"}) InfoTable filenames, 
-			@ThingworxServiceParameter(name = "OutputFileName", description = "Name of the merged PDF.", baseType = "STRING") String OutputFileName, 
-			@ThingworxServiceParameter(name = "FileRepository", description = "The name of the file repository to use.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository"}) String FileRepository
+			@ThingworxServiceParameter(name = "Filenames", description = "List of PDF filenames to merge together.", baseType = "INFOTABLE", aspects = {"dataShape:GenericStringList"}) 
+			InfoTable filenames, 
+			@ThingworxServiceParameter(name = "OutputFileName", description = "Name of the merged PDF.", baseType = "STRING") 
+			String OutputFileName, 
+			@ThingworxServiceParameter(name = "FileRepository", description = "The name of the file repository to use.", baseType = "THINGNAME", aspects = {"defaultValue:SystemRepository", "thingTemplate:FileRepository"}) 
+			String FileRepository
 	)
 	{
 		String str_Result = "Success";
@@ -216,5 +270,33 @@ public class PDFExport extends Resource {
 		}
 		
 		return str_Result;	
+	}
+
+	@ThingworxServiceDefinition(name = "GetAvailableTimezones", description = "This service will retrieve the available timezone that can be used in the CreatePDF service", category = "PDFExport", isAllowOverride = false, aspects = { "isAsync:false" })
+	@ThingworxServiceResult(name = "result", description = "List of available timezone that can be passed to the CreatePDF Service", baseType = "INFOTABLE", aspects = {"isEntityDataShape:true", "dataShape:PDFExport_GetAvailableTimezones" })
+	public InfoTable GetAvailableTimezones() {
+		// Variable Declaration
+		InfoTable result = null; 
+		Set<Timezone> timezones;
+		
+		try {
+			result = InfoTableInstanceFactory.createInfoTableFromDataShape(DATA_SHAPE_AVAILABLE_TIME_ZONE);
+			timezones = Timezone.ALL_ZONES;
+			
+			// Loop through all time zone and add it into the value collection
+			for(Timezone timezone : timezones) {
+				ValueCollection valueCollection = new ValueCollection();
+				valueCollection.put(COLUMN_TIME_ZONE_NAME, new StringPrimitive(timezone.name()));
+				result.addRow(valueCollection);
+			}
+			
+			result.quickSort(COLUMN_TIME_ZONE_NAME);
+			
+		}catch(Exception e) {
+			result = null;
+			_logger.error(e.getMessage());
+		}
+		
+		return result;
 	}
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Entities>
     <ExtensionPackages>
-        <ExtensionPackage dependsOn="" description="Extension for creating PDF reports that contain a specific mashup, displayed like in the browser." minimumThingWorxVersion="7.4.0" name="PDFExtension" packageVersion="3.0.2" vendor="Thingworx Labs">
+        <ExtensionPackage dependsOn="" description="Extension for creating PDF reports that contain a specific mashup, displayed like in the browser." minimumThingWorxVersion="7.4.0" name="PDFExtension" packageVersion="3.0.5" vendor="Thingworx Labs">
             <JarResources>
                 <FileResource description="" file="pdfextension.jar" type="JAR"/>
                 <FileResource description="" file="jbrowserdriver-0.17.3.jar" type="JAR"/>
@@ -17,6 +17,13 @@
             </JarResources>
         </ExtensionPackage>
     </ExtensionPackages>
+  	<DataShapes>
+		<DataShape name="PDFExport_GetAvailableTimezones" description="Datashape listing definition of timezones" aspect.isSystemObject="false">
+			<FieldDefinitions>
+				<FieldDefinition name="TimezoneName" description="Time zone name" baseType="STRING" aspect.isPrimaryKey="true"/>
+			</FieldDefinitions>
+		</DataShape>
+	</DataShapes>
     <Resources>
         <Resource aspect.isCreatable="false" aspect.isEditableExtensionObject="false" className="PDFExport" description="" name="PDFExport"/>
     </Resources>

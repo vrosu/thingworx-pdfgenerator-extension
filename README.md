@@ -8,5 +8,4 @@ After that place the corresponding ThingWorx SDK files in the twx-lib folder in 
 
 Please open issues and feel free to fork it.
 
-This is a ThingWorx Labs project, not covered by PTC Technical Support.
-ThingWorx Labs contains all the internal PTC created content that can be useful for the ThingWorx developer community.
+This Extension is provided as-is and without warranty or support. It is not part of the PTC product suite. Users are free to use, fork and modify them at their own risk. Community contributions are welcomed and can be accepted based on their content.

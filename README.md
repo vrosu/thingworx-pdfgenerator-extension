@@ -8,4 +8,11 @@ After that place the corresponding ThingWorx SDK files in the twx-lib folder in 
 
 Please open issues and feel free to fork it.
 
-This Extension is provided as-is and without warranty or support. It is not part of the PTC product suite. Users are free to use, fork and modify them at their own risk. Community contributions are welcomed and can be accepted based on their content.
+This Extension is provided **as-is and** **without** warranty or support.<br>
+As a consequence, it is **not** tested with each new ThingWorx release version.<br>
+If issues are found, the relevant fix needs to be implemented by customers or an implementation partner.<br>
+It is not part of the PTC product suite. <br>
+
+Users are free to use, fork and modify them at their own risk.<br>
+
+Community contributions for fixes or enhancements are welcomed and can be accepted based on their content.

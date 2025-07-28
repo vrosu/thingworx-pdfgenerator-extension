@@ -1,5 +1,5 @@
 # ThingWorx PDFGenerator Extension
-[Unofficial/Not Supported] Contains the code of the ThingWorx PDFGenerator Extension (widget) built on Extension SDK version 9.4 (not provided here).
+[Unofficial/Not Supported by PTC Technical Support] Contains the code of the ThingWorx PDFGenerator Extension (widget) built on Extension SDK version 9.4 (not provided here).
 
 This is an Ant Eclipse (version 2025-06 (4.36.0)) project that uses the ThingWorx Eclipse plugin, available in the support.ptc.com portal under the ThingWorx platform downloads.
 1. Install the ThingWorx Eclipse plugin.
@@ -14,4 +14,6 @@ Documentation is maintained in a PDF specific for each release.
 
 Download the extension from the Releases section on the right, link here for ease of use: [Releases](https://github.com/vrosu/thingworx-pdfgenerator-client-extension/releases).
 
-This Extension is provided **as-is and without warranty or support**. It is **not** part of the PTC product suite. This project is licensed under the terms of the MIT license.
+This Extension is provided **as-is and without warranty or support**. It is **not** part of the PTC product suite.
+As such, please do not raise any PTC Technical Support cases related to it. Instead, please open issues as instructed above.
+This project is licensed under the terms of the MIT license.

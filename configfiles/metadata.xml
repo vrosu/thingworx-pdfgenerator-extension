@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entities>
+    <ExtensionPackages>
+        <ExtensionPackage
+         dependsOn=""
+         description="Widget that prints a PDF version of the current browser screen"
+         haCompatible="true"
+         minimumThingWorxVersion="9.4.0"
+         name="PDFGenerator"
+         packageVersion="2.0.0"
+         vendor="Open Source / Vladimir Rosu / Not supported by PTC Technical Support"></ExtensionPackage>
+    </ExtensionPackages>
+    <Widgets>
+        <Widget
+         name="pdfgenerator"
+         description="Widget that prints a PDF version of the current browser screen">
+            <UIResources>
+                <FileResource
+                 description="Widget that allows generating PDF exports of Mashups client-side."
+                 file="pdfgenerator.ide.js"
+                 isDevelopment="true"
+                 isRuntime="false"
+                 type="JS"></FileResource>
+                <FileResource
+                 description="Widget that allows generating PDF exports of Mashups client-side."
+                 file="pdfgenerator.ide.css"
+                 isDevelopment="true"
+                 isRuntime="false"
+                 type="CSS"></FileResource>
+                <FileResource
+                 description="Widget that allows generating PDF exports of Mashups client-side."
+                 file="pdfgenerator.runtime.js"
+                 isDevelopment="false"
+                 isRuntime="true"
+                 type="JS"></FileResource>
+                <FileResource
+                 description="Widget that allows generating PDF exports of Mashups client-side."
+                 file="pdfgenerator.runtime.css"
+                 isDevelopment="false"
+                 isRuntime="true"
+                 type="CSS"></FileResource>
+                <FileResource
+                 description="JSPDF library that allows PDF file creation"
+                 file="jspdf.umd.js"
+                 isDevelopment="false"
+                 isRuntime="true"
+                 type="JS"></FileResource>
+                <FileResource
+                 description="html2canvas library that allows saving a page as html canvas"
+                 file="html2canvas.js"
+                 isDevelopment="false"
+                 isRuntime="true"
+                 type="JS"></FileResource>
+            </UIResources>
+        </Widget>
+    </Widgets>
+</Entities>
